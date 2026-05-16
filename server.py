@@ -1,6 +1,7 @@
 import asyncssh
 import asyncio
 import os
+import json
 from pathlib import Path
 from datetime import datetime, timezone
 
@@ -35,6 +36,13 @@ FAKE_RESPONSES = {
 }
 
 PROMPT = "root@ubuntu:~$ "
+
+LOG_FILE = LOG_DIR / "honeypot.jsonl"
+def log_event(event):
+    event["timestamp"] = datetime.now().isoformat()
+    line = json.dumps(event)
+    with open(LOG_FILE, "a") as f:
+        f.write(line + "\n")
 
 class HoneypotSession(asyncssh.SSHServerSession):
     """Handles one attacker session — records all input and provides fake responses."""
@@ -75,7 +83,12 @@ class HoneypotSession(asyncssh.SSHServerSession):
             return
         
         self.commands.append(cmd)
-        # TODO: log command
+        log_event({
+            "type": "command",
+            "ip": self.attacker_ip,
+            "username": self.username,
+            "command": cmd,
+        })
 
         # lookup fake response
         response = FAKE_RESPONSES.get(cmd)
@@ -94,7 +107,13 @@ class HoneypotSession(asyncssh.SSHServerSession):
 
 
     def eof_received(self):
-        # TODO: log info
+        log_event({
+            "type":       "session_end",
+            "ip":         self.attacker_ip,
+            "username":   self.username,
+            "commands":   self.commands,
+            "command_count": len(self.commands),
+        })
         # close channel
         return False
 
@@ -119,7 +138,12 @@ class HoneypotServer(asyncssh.SSHServer):
         return True
 
     def validate_password(self, username, password):
-        print(f"Login attempt from ({self.ip}):  {username} / {password}")
+        log_event({
+            "type":       "login_attempt",
+            "ip":         self.ip,
+            "username":   username,
+            "password":   password,
+        })
         # accept everything
         return True
     
@@ -151,6 +175,7 @@ async def run_server():
         # line_editor=False,
     )
 
+    log_event({"type": "server_start", "host": HOST, "port": PORT})
     print(f"[honeypot] Listening on {HOST}:{PORT}", flush=True)
 
     async with server:
