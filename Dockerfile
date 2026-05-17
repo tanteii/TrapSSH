@@ -10,7 +10,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY honeypot/ ./honeypot/
-RUN mkdir /app/logs
+RUN mkdir -p /app/logs && chown honeypot:honeypot /app/logs
 
 # store logs externally
 VOLUME ["/app/logs"]
