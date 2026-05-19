@@ -171,7 +171,7 @@ async def run_server():
     server = await asyncssh.create_server(
         HoneypotServer, HOST, PORT,
         server_host_keys=[host_key],
-        server_version="placeholder",
+        server_version="SSH-2.0-OpenSSH_8.9p1 Ubuntu-3ubuntu0.6",
         # line_editor=False,
     )
 
