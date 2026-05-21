@@ -16,5 +16,5 @@ RUN mkdir -p /app/logs && chown honeypot:honeypot /app/logs
 VOLUME ["/app/logs"]
 
 USER honeypot
-EXPOSE 2222
+EXPOSE 22
 CMD ["python3", "-u", "honeypot/server.py"]

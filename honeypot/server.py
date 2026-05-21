@@ -3,10 +3,10 @@ import asyncio
 import os
 import json
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime
 
 HOST = os.getenv("HONEYPOT_HOST", "0.0.0.0")
-PORT = int(os.getenv("HONEYPOT_PORT", 2222))
+PORT = int(os.getenv("HONEYPOT_PORT", 22))
 LOG_DIR = Path("./logs")
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 
