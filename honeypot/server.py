@@ -126,6 +126,11 @@ class HoneypotServer(asyncssh.SSHServer):
         self.conn = conn
         self.peer = conn.get_extra_info("peername", ("unknown", 0))
         self.ip = self.peer[0]
+        
+        log_event({
+            "type": "connection",
+            "ip": self.ip,
+        })
 
         print(f"Connection from {self.ip}")
 
