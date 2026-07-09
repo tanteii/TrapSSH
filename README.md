@@ -28,6 +28,7 @@ Example:
 ```bash
 ssh -p (port) -i ~/.ssh/id_ed25519 ubuntu@<your-vps-ip>
 ```
+129.213.45.17
 where (port) is whatever port your SSH daemon is listening on.
 
 **Note:** If your VPS uses port 22 for legitimate SSH access, change the real SSH daemon to listen on a different port before deployment (e.g. 2222).
@@ -47,7 +48,7 @@ Once connected to VPS and in cloned project directory:
 ### Start/stop honeypot
 
 ```bash
-docker-compose-up -d
+docker-compose up -d
 
 docker-compose down
 ```

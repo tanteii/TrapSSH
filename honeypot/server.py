@@ -143,6 +143,7 @@ class HoneypotServer(asyncssh.SSHServer):
         return True
 
     def validate_password(self, username, password):
+        self.password = password;
         log_event({
             "type":       "login_attempt",
             "ip":         self.ip,
@@ -156,7 +157,7 @@ class HoneypotServer(asyncssh.SSHServer):
         return HoneypotSession(
             attacker_ip=self.ip,
             username=getattr(self, "username", "unknown"),
-            password="",
+            password=getattr(self, "password", ""),
         )
 
 # generate host key (first run only)
