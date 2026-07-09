@@ -123,16 +123,29 @@ class HoneypotSession(asyncssh.SSHServerSession):
 # SSH server
 class HoneypotServer(asyncssh.SSHServer):
     def connection_made(self, conn):
-        self.conn = conn
-        self.peer = conn.get_extra_info("peername", ("unknown", 0))
-        self.ip = self.peer[0]
+        # self.conn = conn
+        # self.peer = conn.get_extra_info("peername", ("unknown", 0))
+        # self.ip = self.peer[0]
         
-        log_event({
-            "type": "connection",
-            "ip": self.ip,
-        })
+        # log_event({
+        #     "type": "connection",
+        #     "ip": self.ip,
+        # })
 
-        print(f"Connection from {self.ip}")
+        # print(f"Connection from {self.ip}")
+
+        try:
+            self.conn = conn
+            self.peer = conn.get_extra_info("peername", ("unknown", 0))
+            self.ip = self.peer[0]
+            
+            log_event({
+                "type": "connection",
+                "ip": self.ip,
+            })
+            print(f"Connection from {self.ip}")
+        except Exception as e:
+            print(f"Error in connection_made: {e}")
 
     def begin_auth(self, username):
         # force auth for password
