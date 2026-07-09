@@ -83,7 +83,7 @@ cat logs/honeypot.jsonl | python3 -m json.tool
 ### Copy logs to local machine
 
 ```bash
-scp -i ~/.ssh/id_ed25519 ubuntu@<your-vps-ip>:~/TrapSSH/logs/honeypot.jsonl .
+scp -P (port) -i ~/.ssh/id_ed25519 ubuntu@<your-vps-ip>:~/TrapSSH/logs/honeypot.jsonl .
 ```
 
 ## Log format example
