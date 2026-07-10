@@ -5,37 +5,12 @@ import json
 from pathlib import Path
 from datetime import datetime
 
+from assets import FAKE_RESPONSES, PROMPT, get_motd
+
 HOST = os.getenv("HONEYPOT_HOST", "0.0.0.0")
 PORT = int(os.getenv("HONEYPOT_PORT", 22))
 LOG_DIR = Path("./logs")
 LOG_DIR.mkdir(parents=True, exist_ok=True)
-
-FAKE_RESPONSES = {
-    "whoami":  "root",
-    "id":      "uid=0(root) gid=0(root) groups=0(root)",
-    "uname -a": "Linux ubuntu 5.15.0-91-generic #101-Ubuntu SMP x86_64 GNU/Linux",
-    "uname":   "Linux",
-    "pwd":     "/root",
-    "ls":      "snap  .bashrc  .ssh  .profile",
-    "ls -la":  "total 32\ndrwx------ 4 root root 4096 Jan  8 09:12 .\ndrwxr-xr-x 20 root root 4096 Jan  8 09:10 ..\n-rw-r--r-- 1 root root 3106 Jan  8 09:10 .bashrc\ndrwx------ 2 root root 4096 Jan  8 09:12 .ssh",
-    "ps":      "  PID TTY          TIME CMD\n    1 pts/0    00:00:00 bash\n   42 pts/0    00:00:00 ps",
-    "ps aux":  "USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND\nroot         1  0.0  0.1  21992  3648 ?        Ss   09:10   0:00 /bin/bash",
-    "env":     "SHELL=/bin/bash\nPATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\nHOME=/root\nLOGNAME=root",
-    "ifconfig": "eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500\n        inet 10.0.0.4  netmask 255.255.255.0  broadcast 10.0.0.255",
-    "ip a":    "1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536\n2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500\n    inet 10.0.0.4/24",
-    "cat /etc/passwd": "root:x:0:0:root:/root:/bin/bash\ndaemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin",
-    "cat /etc/os-release": 'NAME="Ubuntu"\nVERSION="22.04.3 LTS (Jammy Jellyfish)"\nID=ubuntu',
-    "history": "    1  apt update\n    2  apt install -y curl\n    3  ls\n    4  history",
-    "uptime":  " 09:15:01 up 12 days,  3:42,  1 user,  load average: 0.00, 0.01, 0.05",
-    "df -h":   "Filesystem      Size  Used Avail Use% Mounted on\n/dev/sda1        40G  8.2G   30G  22% /",
-    "free -m": "              total        used        free\nMem:           7982        412       7234\nSwap:          2047          0       2047",
-    "w":       " 09:15:01 up 12 days,  3:42,  1 user\nUSER     TTY   FROM   LOGIN@   IDLE  JCPU  PCPU WHAT\nroot     pts/0 {ip}  09:12   0.00s  0.00s  0.00s -bash",
-    "last":    "root     pts/0        {ip}        Mon Jan  8 09:12   still running",
-    "exit":    None,
-    "logout":  None,
-}
-
-PROMPT = "root@ubuntu:~$ "
 
 LOG_FILE = LOG_DIR / "honeypot.jsonl"
 def log_event(event):
@@ -58,8 +33,7 @@ class HoneypotSession(asyncssh.SSHServerSession):
     def connection_made(self, channel):
         self.channel = channel
         # mimic linux shell
-        channel.write(f"Welcome to Ubuntu 22.04.3 LTS (GNU/Linux 5.15.0-91-generic x86_64)\r\n\r\n")
-        channel.write(f" * Documentation:  https://help.ubuntu.com\r\n\r\n")
+        channel.write(get_motd())
         channel.write(PROMPT)
 
     def shell_requested(self):
@@ -126,10 +100,12 @@ class HoneypotServer(asyncssh.SSHServer):
         self.conn = conn
         self.peer = conn.get_extra_info("peername", ("unknown", 0))
         self.ip = self.peer[0]
+        self.client_version = conn.get_extra_info("client_version", "unknown")
         
         log_event({
             "type": "connection",
             "ip": self.ip,
+            "client_version": self.client_version,
         })
 
         print(f"Connection from {self.ip}")

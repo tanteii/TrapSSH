@@ -3,9 +3,10 @@ services:
     build: .
     container_name: ssh-honeypot
     ports:
-      - "22:22"
-    expose:
-      - "22"
+      # - "22:22"
+
+      # uncomment for local testing:
+      - "2222:22"
     volumes:
       - ./logs:/app/logs
     restart: unless-stopped
