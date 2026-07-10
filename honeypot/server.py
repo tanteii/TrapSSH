@@ -71,14 +71,28 @@ class HoneypotSession(asyncssh.SSHServerSession):
             base = cmd.split()[0]
             response = f"{base}: command not found"
 
+        # exit/logout command received
         if response is None:
-            # exit/logout
+            print(f"Disconnected:  {self.attacker_ip}")
+            self.channel.write("logout\r\n")
             self.channel.close()
             return
         
         response = response.replace("{ip}", self.attacker_ip)
         self.channel.write(response.replace("\n", "\r\n") + "\r\n" + PROMPT)
 
+    def exec_requested(self, command):
+        print(f"exec request from {self.attacker_ip}:\n{command}\n")
+
+        log_event({
+            "type": "exec_request",
+            "ip": self.attacker_ip,
+            "username": self.username,
+            "command": command,
+        })
+        self.handle_command(command.strip())
+        self.channel.close()
+        return True
 
     def eof_received(self):
         log_event({
@@ -118,8 +132,12 @@ class HoneypotServer(asyncssh.SSHServer):
     def password_auth_supported(self):
         return True
 
-    def validate_password(self, username, password):
-        self.password = password;
+    async def validate_password(self, username, password):
+        self.password = password
+
+        # mimic authentication latency
+        await asyncio.sleep(0.8)
+
         log_event({
             "type":       "login_attempt",
             "ip":         self.ip,
@@ -129,6 +147,20 @@ class HoneypotServer(asyncssh.SSHServer):
         # accept everything
         return True
     
+    def public_key_auth_supported(self):
+        return True
+
+    def validate_public_key(self, username, key):
+        # print(f"public key auth attempt from {self.ip} with username: {username}")
+        log_event({
+            "type": "pubkey_attempt",
+            "ip": self.ip,
+            "username": username,
+            "key": key.get_fingerprint(),
+        })
+        # reject and try fallback to password auth
+        return False
+        
     def session_requested(self):
         return HoneypotSession(
             attacker_ip=self.ip,

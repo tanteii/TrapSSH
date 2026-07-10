@@ -1,11 +1,33 @@
-from datetime import datetime
+from datetime import datetime, timedelta
+import random
 
 PROMPT = "root@ubuntu:~$ "
 
 FAKE_RESPONSES = {
     "whoami":  "root",
     "id":      "uid=0(root) gid=0(root) groups=0(root)",
-    "uname -a": "Linux ubuntu 5.15.0-91-generic #101-Ubuntu SMP Mon Apr  6 05:34:28 UTC 2023 x86_64 x86_64 x86_64 GNU/Linux",
+    "uname -a": "Linux ubuntu 5.15.0-91-generic #101-Ubuntu SMP Thu Jun 18 21:54:43 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux",
+    "uname -s -v -n -r -m": "Linux ubuntu 5.15.0-91-generic #101-Ubuntu SMP Thu Jun 18 21:54:43 UTC 2026 x86_64",
+    "uname -m":   "x86_64",
+    "uname -r":   "5.15.0-91-generic",
+    "uname -s":   "Linux",
+    "uname -n":   "ubuntu",
+    "arch":       "x86_64",
+    "hostname":   "ubuntu",
+    #### temp (TODO: clean and check validity)
+    "busybox":              "BusyBox v1.30.1 (Ubuntu 1:1.30.1-7ubuntu3) multi-call binary.",
+    "busybox cat /proc/self/exe": "",
+    "cat /proc/cpuinfo":    "processor\t: 0\nvendor_id\t: GenuineIntel\nmodel name\t: Intel(R) Xeon(R) CPU E5-2680 v3\ncpu MHz\t\t: 2494.224\ncache size\t: 30720 KB",
+    "cat /proc/meminfo":    "MemTotal:        8175692 kB\nMemFree:         6823412 kB\nMemAvailable:    7234816 kB",
+    "cat /proc/version":    "Linux version 5.15.0-91-generic (buildd@lcy02-amd64-059) (gcc (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0) #101-Ubuntu SMP Tue Nov 14 13:30:08 UTC 2023",
+    "nproc":      "2",
+    "lscpu":      "Architecture:            x86_64\nCPU(s):                  2\nModel name:              Intel(R) Xeon(R) CPU E5-2680 v3 @ 2.50GHz",
+    "which curl":   "/usr/bin/curl",
+    "which wget":   "/usr/bin/wget",
+    "which python": "/usr/bin/python",
+    "which python3": "/usr/bin/python3",
+    "which perl":   "/usr/bin/perl",
+    ####
     "uname":   "Linux",
     "pwd":     "/root",
     "ls":      "snap  .bashrc  .ssh  .profile",
@@ -27,8 +49,17 @@ FAKE_RESPONSES = {
     "logout":  None,
 }
 
+def get_last_login():
+    days = random.randint(1, 7)
+    hours = random.randint(0, 23)
+    last = datetime.now() - timedelta(days, hours)
+    return last.strftime("%a %b %d %H:%M:%S %Y")
+
 def get_motd():
     now = datetime.now().strftime("%a %b %d %H:%M:%S UTC %Y")
+    last_login = get_last_login()
+    # TODO: exclue private/reserved IP ranges in case honeypot giveaway
+    last_ip = f"{random.randint(1,254)}.{random.randint(1,254)}.{random.randint(1,254)}.{random.randint(1,254)}"
 
     return f"""Welcome to Ubuntu 22.04.3 LTS (GNU/Linux 5.15.0-91-generic x86_64)
 
@@ -59,6 +90,7 @@ Learn more about enabling ESM Apps service at https://ubuntu.com/esm
 New release '24.04.4 LTS' available.
 Run 'do-release-upgrade' to upgrade to it.
 
-*** System restart required ***
+*** System restart required *** 
+Last login: {last_login} from {last_ip}
 
 """.replace("\n", "\r\n")
