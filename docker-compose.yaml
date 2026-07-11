@@ -6,10 +6,10 @@ services:
     container_name: ssh-honeypot
     ports:
       # uncomment for VPS hosting
-      # - "22:22"
+      - "22:22"
 
       # uncomment for local testing (replace 2222 with localhost port)
-      - "2222:22"
+      # - "2222:22"
     volumes:
       - ./logs:/app/logs
     restart: unless-stopped
