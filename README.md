@@ -36,7 +36,7 @@ where (port) is whatever port your (VPS) SSH daemon is listening on.
 ```bash
 git clone https://github.com/tanteii/TrapSSH.git
 cd TrapSSH
-docker-compose up -d
+docker compose up -d
 ```
 
 The honeypot will begin listening on port 22 immediately.
@@ -47,15 +47,15 @@ Once connected to VPS and in cloned project directory:
 ### Start/stop honeypot
 
 ```bash
-docker-compose up -d
+docker compose up -d
 
-docker-compose down
+docker compose down
 ```
 
 ### Rebuild after code changes
 
 ```bash
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
 ### Check running status
