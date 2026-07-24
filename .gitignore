@@ -208,3 +208,4 @@ __marimo__/
 
 # ignore logs and ssh key
 logs/
+analysis/output/
