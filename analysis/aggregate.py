@@ -66,12 +66,12 @@ def main():
 
             if etype == "login_attempt":
                 credentials[(username, password)] += 1
+                usernames[username] += 1
+                passwords[password] += 1
 
             if etype in ("command", "exec_request"):
                 commands[command] += 1
 
-            usernames[username] += 1
-            passwords[password] += 1
 
             raw_entries.append([event.get("timestamp", ""), etype, ip, username, password, command])
 
